@@ -1,15 +1,9 @@
-import { Textarea } from "./components/Textarea"
-
+import Home from './pages/Home'
 
 const Root = () => {
-
-    
     return(
-        <div>
-            <p className="text-3xl font-bold underline">
-                Root route
-            </p>
-            <Textarea className="resize-none" placeholder="Message Ollama"/>
+        <div className="min-h-screen min-w-screen">
+            <Home />
         </div>
     )
 }
