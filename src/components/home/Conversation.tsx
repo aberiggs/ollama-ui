@@ -12,22 +12,28 @@ export interface ConversationProps
 const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
   ({ className, ...props }, ref) => {
     const [prompt, setPrompt] = useState("");
-    const [messages, setMessages] = useState([
-      "**Sure, I can assist with testing. How can I help you?** **Here are some ways I can help with testing:** * **Identifying test cases:** I can help you identify the necessary test cases to be executed to ensure the functionality and performance of a product or system. * **Generating test scenarios:** I can generate comprehensive test scenarios that cover various scenarios and edge cases. * **Evaluating test results:** I can analyze and evaluate the results of test runs to identify and report any defects or areas for improvement. * **Providing test automation recommendations:** I can suggest best practices and automation techniques to streamline and improve test execution. * **Creating test reports:** I can generate comprehensive test reports that include detailed test cases, results, and pass/fail information. * **Identifying testing tools and frameworks:** I can recommend suitable testing tools and frameworks based on your specific requirements and programming language. **Please provide me with a specific request or question about testing, and I will be happy to assist you.**",
-    ]);
+    const [messages, setMessages] = useState([]);
     const [canSend, setCanSend] = useState(true);
 
     const generate = async () => {
       setCanSend(false); // Disable button to prevent duplicate sends
 
+      const newMessageHistory = [
+        ...messages,
+        { role: "user", content: prompt },
+      ];
+
       const data = {
         model: "gemma:2b",
-        prompt: prompt,
+        messages: newMessageHistory,
         stream: false,
       };
 
+      setMessages(newMessageHistory);
+      setPrompt("");
+
       try {
-        const response = await fetch("http://localhost:11434/api/generate", {
+        const response = await fetch("http://localhost:11434/api/chat", {
           method: "POST",
           //mode: "cors", // no-cors, *cors, same-origin
           headers: {
@@ -37,9 +43,8 @@ const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
         });
 
         const result = await response.json();
-        if (result.response) {
-          setMessages([...messages, result.response]);
-          setPrompt("");
+        if (result.done && result.message) {
+          setMessages([...newMessageHistory, result.message]);
         } else {
           console.log("Awaited, but no response received: ", result);
         }
@@ -53,9 +58,14 @@ const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
       <div className={cn("flex flex-col items-center", className)}>
         <div className="max-w-full flex-grow">
           <ul className="">
-            {messages.map((message) => (
-              <li className="break-words p-6">{message}</li>
-            ))}
+            {messages.map((message) => {
+              return (
+                <div className="w-full p-6">
+                  <h1>{message.role}</h1>
+                  <li className="break-words p-6">{message.content}</li>
+                </div>
+              );
+            })}
           </ul>
         </div>
         <div className="mb-10 flex w-5/6 flex-row items-center space-x-8 align-middle">
