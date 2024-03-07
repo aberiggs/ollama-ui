@@ -3,7 +3,7 @@ import ConversationList from "../components/home/ConversationList";
 
 const Home = () => {
   return (
-    <div className="flex min-h-screen w-full flex-row">
+    <div className="flex max-h-screen w-full flex-row">
       <ConversationList className="min-h-screen w-1/4" />
       <Conversation className="w-3/4" />
     </div>

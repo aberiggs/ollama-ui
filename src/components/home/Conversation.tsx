@@ -55,22 +55,24 @@ const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
     };
 
     return (
-      <div className={cn("flex flex-col items-center", className)}>
-        <div className="max-w-full flex-grow">
+      <div
+        className={cn("flex flex-col items-center overflow-clip", className)}
+      >
+        <div className="max-h-full w-10/12 flex-grow overflow-scroll">
           <ul className="">
             {messages.map((message) => {
               return (
-                <div className="w-full p-6">
-                  <h1>{message.role}</h1>
+                <div className="p-6">
+                  <h1 className="font-bold underline">{message.role}</h1>
                   <li className="break-words p-6">{message.content}</li>
                 </div>
               );
             })}
           </ul>
         </div>
-        <div className="mb-10 flex w-5/6 flex-row items-center space-x-8 align-middle">
+        <div className="h-1/12 my-10 flex w-5/6 flex-row items-center space-x-8 align-middle">
           <Textarea
-            className="flex-grow resize-none"
+            className="h-full resize-none"
             placeholder="Message Ollama"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
