@@ -1,19 +1,40 @@
 import * as React from "react";
 import { cn } from "../../lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { SendHorizontal } from "lucide-react";
 
 import { Textarea } from "../Textarea";
 import { Button } from "../Button";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface ConversationProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  chatIndex: number;
+}
 
 const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
-  ({ className, ...props }, ref) => {
+  ({ className, chatIndex, ...props }, ref) => {
     const [prompt, setPrompt] = useState("");
     const [messages, setMessages] = useState([]);
     const [canSend, setCanSend] = useState(true);
+
+    useEffect(() => {
+      (async () => {
+        const chatList = await (window as any).electronAPI.getStoreValue(
+          "chat_list",
+        );
+        setMessages(chatList[chatIndex]);
+      })();
+    }, [chatIndex]);
+
+    const storeMessages = async (updatedMessages: Array<string>) => {
+      console.log("Updating chat list with new messages");
+      const chatList = await (window as any).electronAPI.getStoreValue(
+        "chat_list",
+      );
+      chatList[chatIndex] = updatedMessages;
+      await (window as any).electronAPI.setStoreValue("chat_list", chatList);
+    };
 
     const generate = async () => {
       setCanSend(false); // Disable button to prevent duplicate sends
@@ -52,6 +73,7 @@ const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
         console.error("Error", error);
       }
       setCanSend(true);
+      storeMessages(newMessageHistory);
     };
 
     return (
@@ -77,8 +99,11 @@ const Conversation = React.forwardRef<HTMLTextAreaElement, ConversationProps>(
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
-          <Button onClick={generate} disabled={!canSend}>
-            Send
+          <Button
+            onClick={generate}
+            disabled={!canSend || prompt.trim().length <= 0}
+          >
+            <SendHorizontal />
           </Button>
         </div>
       </div>
